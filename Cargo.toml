@@ -1,5 +1,6 @@
 [package]
 name = "scraper_query"
+description = "Ergonomic Query for HTML with Scraper"
 authors = ["feng liang <feng.liang@kaust.edu.sa>"]
 version = "0.1.0"
 edition = "2021"
