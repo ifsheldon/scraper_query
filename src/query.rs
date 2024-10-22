@@ -103,8 +103,17 @@ pub fn tag(tag: impl Into<String>) -> Tag {
 
 impl Into<Query> for Class {
     fn into(self) -> Query {
+        let expression = if self.0.contains(" ") {
+            let mut exps: Vec<Expr> = self.0.split(' ')
+                .map(|s| col(CLASS).list().contains(lit(s)))
+                .collect();
+            let first = exps.pop().unwrap();
+            exps.into_iter().fold(first, |a, b| a.and(b))
+        } else {
+            col(CLASS).list().contains(lit(self.0))
+        };
         Query {
-            expression: col(CLASS).list().contains(lit(self.0))
+            expression
         }
     }
 }
@@ -256,6 +265,11 @@ mod tests {
         let document = Html::parse_document(HTML);
         let queryable = HTMLIndex::new(&document);
         let node_ids = queryable.query(class("foo") & class("bar"));
+        assert_eq!(node_ids.len(), 1);
+        let node_id = node_ids[0];
+        assert_eq!(get_id(&document, node_id), "3");
+
+        let node_ids = queryable.query(class("foo bar"));
         assert_eq!(node_ids.len(), 1);
         let node_id = node_ids[0];
         assert_eq!(get_id(&document, node_id), "3");
