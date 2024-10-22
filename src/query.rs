@@ -152,7 +152,7 @@ tags!(processing_instruction);
 mod tests {
     use crate::consts::*;
     use crate::html_index::HTMLIndex;
-    use crate::query::{class, id, tag};
+    use crate::query::{class, h1, id, tag};
     use crate::utils::u64_to_node_id;
     use ego_tree::NodeId;
     use polars::prelude::*;
@@ -162,11 +162,19 @@ mod tests {
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Hello, world!</title>
-<h1 class="foo">Hello, <i>world!</i></h1>
-<h2 class="bar">Hello, <i>world!</i></h2>
-<h3 class="foo bar" id="foobar">Hello, <i>world!</i></h3>
-<h1 id="hello">你好</h1>
+<h1 class="foo" id="1">Hello, <i>world!</i></h1>
+<h2 class="bar" id="2">Hello, <i>world!</i></h2>
+<h3 class="foo bar" id="3">Hello, <i>world!</i></h3>
+<h1 id="4">你好</h1>
 "#;
+
+    fn get_id(document: &Html, node_id: NodeId) -> &str {
+        document.tree
+            .get(node_id).unwrap()
+            .value()
+            .as_element().unwrap()
+            .id().unwrap()
+    }
 
     #[test]
     fn test_class() {
@@ -200,7 +208,7 @@ mod tests {
         let ref_df = queryable.df
             .clone()
             .lazy()
-            .filter(col(ID).eq(lit("hello")))
+            .filter(col(ID).eq(lit("3")))
             .collect()
             .unwrap();
         assert_eq!(ref_df.height(), 1);
@@ -211,7 +219,7 @@ mod tests {
             .into_no_null_iter()
             .map(u64_to_node_id)
             .collect();
-        let node_ids = queryable.query(id("hello"));
+        let node_ids = queryable.query(id("3"));
         println!("{}", ref_df);
         println!("Ref NodeIDs: {:?}", ref_node_ids);
         println!("NodeIDs: {:?}", node_ids);
@@ -250,10 +258,26 @@ mod tests {
         let node_ids = queryable.query(class("foo") & class("bar"));
         assert_eq!(node_ids.len(), 1);
         let node_id = node_ids[0];
-        assert_eq!(document.tree
-                       .get(node_id).unwrap()
-                       .value()
-                       .as_element().unwrap()
-                       .id().unwrap(), "foobar");
+        assert_eq!(get_id(&document, node_id), "3");
+    }
+
+    #[test]
+    fn test_query1() {
+        let document = Html::parse_document(HTML);
+        let queryable = HTMLIndex::new(&document);
+        let node_ids = queryable.query(class("bar") | id("3"));
+        assert_eq!(node_ids.len(), 2);
+        assert_eq!(get_id(&document, node_ids[0]), "2");
+        assert_eq!(get_id(&document, node_ids[1]), "3");
+    }
+
+    #[test]
+    fn test_query2() {
+        let document = Html::parse_document(HTML);
+        let queryable = HTMLIndex::new(&document);
+        let node_ids = queryable.query(h1());
+        assert_eq!(node_ids.len(), 2);
+        assert_eq!(get_id(&document, node_ids[0]), "1");
+        assert_eq!(get_id(&document, node_ids[1]), "4");
     }
 }
