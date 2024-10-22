@@ -5,12 +5,12 @@ use crate::consts::*;
 use crate::query::Query;
 use crate::utils::{node_id_to_u64, u64_to_node_id};
 
-pub struct QueryableHTML<'html> {
+pub struct HTMLIndex<'html> {
     pub(crate) df: DataFrame,
     pub html: &'html Html,
 }
 
-impl<'html> QueryableHTML<'html> {
+impl<'html> HTMLIndex<'html> {
     pub fn new(html: &'html Html) -> Self {
         let node_num = html.tree.nodes().count();
         let mut node_ids = Vec::with_capacity(node_num);
@@ -85,7 +85,7 @@ mod tests {
 "#;
 
         let document = Html::parse_document(html);
-        let queryable = super::QueryableHTML::new(&document);
+        let queryable = super::HTMLIndex::new(&document);
         println!("{}", queryable.df);
     }
 }

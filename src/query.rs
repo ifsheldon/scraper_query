@@ -152,7 +152,7 @@ mod tests {
     use scraper::Html;
     use crate::consts::*;
     use crate::query::{class, id, tag};
-    use crate::queryable_html::QueryableHTML;
+    use crate::html_index::HTMLIndex;
     use crate::utils::u64_to_node_id;
 
     const HTML: &str = r#"
@@ -168,7 +168,7 @@ mod tests {
     #[test]
     fn test_class() {
         let document = Html::parse_document(HTML);
-        let queryable = QueryableHTML::new(&document);
+        let queryable = HTMLIndex::new(&document);
         let ref_df = queryable.df
             .clone()
             .lazy()
@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn test_id() {
         let document = Html::parse_document(HTML);
-        let queryable = QueryableHTML::new(&document);
+        let queryable = HTMLIndex::new(&document);
         let ref_df = queryable.df
             .clone()
             .lazy()
@@ -218,7 +218,7 @@ mod tests {
     #[test]
     fn test_tag() {
         let document = Html::parse_document(HTML);
-        let queryable = QueryableHTML::new(&document);
+        let queryable = HTMLIndex::new(&document);
         let ref_df = queryable.df
             .clone()
             .lazy()
@@ -243,7 +243,7 @@ mod tests {
     #[test]
     fn test_query() {
         let document = Html::parse_document(HTML);
-        let queryable = QueryableHTML::new(&document);
+        let queryable = HTMLIndex::new(&document);
         let node_ids = queryable.query(class("foo") & class("bar"));
         assert_eq!(node_ids.len(), 1);
         let node_id = node_ids[0];
