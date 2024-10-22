@@ -1,4 +1,7 @@
 # scraper_query
+[![crates.io](https://img.shields.io/crates/v/scraper?color=dark-green)][crate]
+
+[crate]: https://crates.io/crates/scraper
 
 `scraper_query` is a simple tool for you to query components in HTML documents with `scraper` so that you can easily do simple HTML manipulations, which are common in web crawling and web scraping and data cleaning.
 
