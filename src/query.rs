@@ -1,6 +1,6 @@
-use std::ops::{BitAnd, BitOr};
-use polars::prelude::*;
 use crate::consts::*;
+use polars::prelude::*;
+use std::ops::{BitAnd, BitOr};
 
 pub struct Query {
     expression: Expr,
@@ -61,13 +61,13 @@ macro_rules! impl_and_or {
     ($typ: ty, explicit) => {
         impl $typ {
             pub fn and(self, rhs: impl Into<Query>) -> Query {
-                let lhs:Query = self.into();
+                let lhs: Query = self.into();
                 let rhs: Query = rhs.into();
                 lhs & rhs
             }
 
             pub fn or(self, rhs: impl Into<Query>) -> Query {
-                let lhs:Query = self.into();
+                let lhs: Query = self.into();
                 let rhs: Query = rhs.into();
                 lhs | rhs
             }
@@ -150,13 +150,13 @@ tags!(processing_instruction);
 
 #[cfg(test)]
 mod tests {
+    use crate::consts::*;
+    use crate::html_index::HTMLIndex;
+    use crate::query::{class, id, tag};
+    use crate::utils::u64_to_node_id;
     use ego_tree::NodeId;
     use polars::prelude::*;
     use scraper::Html;
-    use crate::consts::*;
-    use crate::query::{class, id, tag};
-    use crate::html_index::HTMLIndex;
-    use crate::utils::u64_to_node_id;
 
     const HTML: &str = r#"
 <!DOCTYPE html>

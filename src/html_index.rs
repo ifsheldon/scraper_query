@@ -1,9 +1,9 @@
-use ego_tree::NodeId;
-use polars::prelude::*;
-use scraper::{Html, Node};
 use crate::consts::*;
 use crate::query::Query;
 use crate::utils::{node_id_to_u64, u64_to_node_id};
+use ego_tree::NodeId;
+use polars::prelude::*;
+use scraper::{Html, Node};
 
 pub struct HTMLIndex<'html> {
     pub(crate) df: DataFrame,
@@ -65,7 +65,7 @@ impl<'html> HTMLIndex<'html> {
             .collect()
             .unwrap();
         let node_ids = df.column(NODE_ID).unwrap();
-        let node_ids:Vec<u64> = node_ids.u64().unwrap().into_no_null_iter().collect();
+        let node_ids: Vec<u64> = node_ids.u64().unwrap().into_no_null_iter().collect();
         let node_ids = node_ids.into_iter().map(u64_to_node_id).collect();
         node_ids
     }

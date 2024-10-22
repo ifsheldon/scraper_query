@@ -1,6 +1,6 @@
+use ego_tree::NodeId;
 use std::mem::transmute;
 use std::num::NonZeroUsize;
-use ego_tree::NodeId;
 
 pub(crate) fn node_id_to_u64(node_id: NodeId) -> u64 {
     // unsafe transmute because `node_id` cannot access internal usize
