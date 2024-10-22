@@ -144,6 +144,9 @@ tags!(div);
 tags!(span);
 tags!(a);
 tags!(img);
+tags!(comment);
+tags!(text);
+tags!(processing_instruction);
 
 #[cfg(test)]
 mod tests {
