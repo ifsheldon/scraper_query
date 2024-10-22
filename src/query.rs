@@ -57,12 +57,31 @@ macro_rules! impl_and_or {
                 lhs | rhs
             }
         }
+    };
+    ($typ: ty, explicit) => {
+        impl $typ {
+            pub fn and(self, rhs: impl Into<Query>) -> Query {
+                let lhs:Query = self.into();
+                let rhs: Query = rhs.into();
+                lhs & rhs
+            }
+
+            pub fn or(self, rhs: impl Into<Query>) -> Query {
+                let lhs:Query = self.into();
+                let rhs: Query = rhs.into();
+                lhs | rhs
+            }
+        }
     }
 }
 
 impl_and_or!(Class);
+impl_and_or!(Class, explicit);
 impl_and_or!(Id);
+impl_and_or!(Id, explicit);
 impl_and_or!(Tag);
+impl_and_or!(Tag, explicit);
+impl_and_or!(Query, explicit);
 
 pub fn class(class: impl Into<String>) -> Class {
     let class = class.into();
@@ -142,7 +161,7 @@ mod tests {
 <title>Hello, world!</title>
 <h1 class="foo">Hello, <i>world!</i></h1>
 <h2 class="bar">Hello, <i>world!</i></h2>
-<h3 class="foo bar">Hello, <i>world!</i></h3>
+<h3 class="foo bar" id="foobar">Hello, <i>world!</i></h3>
 <h1 id="hello">你好</h1>
 "#;
 
@@ -219,5 +238,19 @@ mod tests {
         println!("Ref NodeIDs: {:?}", ref_node_ids);
         println!("NodeIDs: {:?}", node_ids);
         assert_eq!(ref_node_ids, node_ids);
+    }
+
+    #[test]
+    fn test_query() {
+        let document = Html::parse_document(HTML);
+        let queryable = QueryableHTML::new(&document);
+        let node_ids = queryable.query(class("foo") & class("bar"));
+        assert_eq!(node_ids.len(), 1);
+        let node_id = node_ids[0];
+        assert_eq!(document.tree
+                       .get(node_id).unwrap()
+                       .value()
+                       .as_element().unwrap()
+                       .id().unwrap(), "foobar");
     }
 }
