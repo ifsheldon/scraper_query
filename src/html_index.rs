@@ -73,22 +73,3 @@ impl<'html> HTMLIndex<'html> {
         node_ids
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use scraper::Html;
-
-    #[test]
-    fn test_convert() {
-        let html = r#"
-    <!DOCTYPE html>
-    <meta charset="utf-8">
-    <title>Hello, world!</title>
-    <h1 class="foo">Hello, <i>world!</i></h1>
-"#;
-
-        let document = Html::parse_document(html);
-        let queryable = super::HTMLIndex::new(&document);
-        println!("{}", queryable.df);
-    }
-}
