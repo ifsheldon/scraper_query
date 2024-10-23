@@ -2,13 +2,17 @@ use crate::consts::*;
 use polars::prelude::*;
 use std::ops::{BitAnd, BitOr, Not};
 
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Query {
     expression: Expr,
 }
 
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Class(String);
+#[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Id(String);
 
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub enum Tag {
     // html tags
     A,

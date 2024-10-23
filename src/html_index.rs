@@ -5,6 +5,7 @@ use ego_tree::NodeId;
 use polars::prelude::*;
 use scraper::{Html, Node};
 
+#[derive(Debug, Clone)]
 pub struct HTMLIndex<'html> {
     pub(crate) df: DataFrame,
     pub html: &'html Html,
