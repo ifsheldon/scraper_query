@@ -2,7 +2,7 @@
 name = "scraper_query"
 description = "Ergonomic Query for HTML with Scraper"
 authors = ["feng liang <feng.liang@kaust.edu.sa>"]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license-file = "LICENSE"
 readme = "README.md"
