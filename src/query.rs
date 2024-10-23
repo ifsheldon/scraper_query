@@ -1,6 +1,6 @@
 use crate::consts::*;
 use polars::prelude::*;
-use std::ops::{BitAnd, BitOr};
+use std::ops::{BitAnd, BitOr, Not};
 
 pub struct Query {
     expression: Expr,
@@ -353,7 +353,17 @@ impl<T: Into<Query>> BitOr<T> for Query {
     }
 }
 
-macro_rules! impl_and_or {
+impl Not for Query {
+    type Output = Query;
+
+    fn not(self) -> Self::Output {
+        Query {
+            expression: self.expression.not()
+        }
+    }
+}
+
+macro_rules! impl_simple_logics {
     ($typ: ty) => {
         impl<T: Into<Query>> BitAnd<T> for $typ {
             type Output = Query;
@@ -374,6 +384,15 @@ macro_rules! impl_and_or {
                 lhs | rhs
             }
         }
+
+        impl Not for $typ {
+            type Output = Query;
+
+            fn not(self) -> <Self as Not>::Output {
+                let q: Query = self.into();
+                !q
+            }
+        }
     };
     ($typ: ty, explicit) => {
         impl $typ {
@@ -388,17 +407,22 @@ macro_rules! impl_and_or {
                 let rhs: Query = rhs.into();
                 lhs | rhs
             }
+
+            pub fn not(self) -> Query {
+                let q: Query = self.into();
+                !q
+            }
         }
     }
 }
 
-impl_and_or!(Class);
-impl_and_or!(Class, explicit);
-impl_and_or!(Id);
-impl_and_or!(Id, explicit);
-impl_and_or!(Tag);
-impl_and_or!(Tag, explicit);
-impl_and_or!(Query, explicit);
+impl_simple_logics!(Class);
+impl_simple_logics!(Class, explicit);
+impl_simple_logics!(Id);
+impl_simple_logics!(Id, explicit);
+impl_simple_logics!(Tag);
+impl_simple_logics!(Tag, explicit);
+impl_simple_logics!(Query, explicit);
 
 impl Into<Query> for Class {
     fn into(self) -> Query {
@@ -561,5 +585,14 @@ mod tests {
         assert_eq!(node_ids.len(), 2);
         assert_eq!(get_id(&document, node_ids[0]), "1");
         assert_eq!(get_id(&document, node_ids[1]), "4");
+    }
+
+    #[test]
+    fn test_not() {
+        let document = Html::parse_document(HTML);
+        let queryable = HTMLIndex::new(&document);
+        let node_ids = queryable.query(Tag::H1 & (!class("foo")));
+        assert_eq!(node_ids.len(), 1);
+        assert_eq!(get_id(&document, node_ids[0]), "4");
     }
 }
