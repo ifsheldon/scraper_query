@@ -20,6 +20,8 @@ let node_ids = index.query(class("foo") & class("bar"));
 let node_ids = index.query(id("foo"));  
 // find all nodes with tag "h1" and class "foo"
 let node_ids = index.query(Tag::H1 & class("foo"));  // same as `Tag::H1.and(class("foo"))`
+// find all nodes with tag "h1" and not class "foo"
+let node_ids = index.query(Tag::H1 & (!class("foo")));
 // simple manipulation
 for id in node_ids {
     document.remove_from_parent(&id);
