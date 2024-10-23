@@ -2,16 +2,23 @@ use crate::consts::*;
 use polars::prelude::*;
 use std::ops::{BitAnd, BitOr, Not};
 
+/// A query composed of expressions from `class`, `Tag`, `id`.
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Query {
     expression: Expr,
 }
 
+/// Query expression that selects nodes with a given class name
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Class(String);
+
+/// Query expression that selects nodes with a given id
 #[derive(Eq, PartialEq, Debug, Clone)]
 pub struct Id(String);
 
+/// HTML tags with 3 extra tags `Comment`, `Text` and `ProcessingInstruction`
+///
+/// Query expression that selects nodes with a given tag
 #[derive(Eq, PartialEq, Debug, Clone, Copy)]
 pub enum Tag {
     // html tags
@@ -160,13 +167,14 @@ pub enum Tag {
     ProcessingInstruction,
 }
 
-
+/// Creates a new `Class` that selects nodes with the given class name
 pub fn class(class: impl Into<String>) -> Class {
     let class = class.into();
     assert!(!class.is_empty(), "Class cannot be empty");
     Class(class)
 }
 
+/// Creates a new `Id` that selects nodes with the given id
 pub fn id(id: impl Into<String>) -> Id {
     let id = id.into();
     assert!(!id.is_empty(), "Id cannot be empty");

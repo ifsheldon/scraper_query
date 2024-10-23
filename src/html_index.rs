@@ -5,6 +5,7 @@ use ego_tree::NodeId;
 use polars::prelude::*;
 use scraper::{Html, Node};
 
+/// An index into `Html` document tree backed by polars' `DataFrame`.
 #[derive(Debug, Clone)]
 pub struct HTMLIndex<'html> {
     pub(crate) df: DataFrame,
@@ -57,6 +58,7 @@ impl<'html> HTMLIndex<'html> {
         }
     }
 
+    /// Query the index with a query expression
     pub fn query(&self, query: impl Into<Query>) -> Vec<NodeId> {
         let query = query.into();
         let df = self.df.clone()
