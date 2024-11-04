@@ -10,6 +10,6 @@ repository = "https://github.com/ifsheldon/scraper_query"
 homepage = "https://github.com/ifsheldon/scraper_query"
 
 [dependencies]
-polars = { version = "0.43", features = ["lazy", "strings", "is_in"] }
-scraper = "0.20"
-ego-tree = "0.6"
+polars = { version = "0.44", features = ["lazy", "strings", "is_in"] }
+scraper = "0.21"
+ego-tree = "0.9"
