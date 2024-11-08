@@ -181,6 +181,13 @@ pub fn id(id: impl Into<String>) -> Id {
     Id(id)
 }
 
+/// Select HTML nodes that match any of the queries
+pub fn any_of(queries: impl IntoIterator<Item = impl Into<Query>>) -> Query {
+    let mut iter = queries.into_iter();
+    let query = iter.next().expect("at least one query").into();
+    iter.fold(query, Query::or)
+}
+
 impl Tag {
     fn name(&self) -> &str {
         match self {
@@ -599,5 +606,13 @@ mod tests {
         let node_ids = HTML_INDEX.query(Tag::H1 & (!class("foo")));
         assert_eq!(node_ids.len(), 1);
         assert_eq!(get_id(&HTML_INDEX.html, node_ids[0]), "4");
+    }
+    
+    #[test]
+    fn test_any_of() {
+        let node_ids = HTML_INDEX.query(any_of([id("1"), id("2")]));
+        assert_eq!(node_ids.len(), 2);
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[0]), "1");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[1]), "2");
     }
 }
