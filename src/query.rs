@@ -463,15 +463,17 @@ impl Into<Query> for Id {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::LazyLock;
     use crate::consts::*;
     use crate::html_index::HTMLIndex;
-    use crate::query::{class, id, Tag};
+    use crate::query::{any_of, class, id, Tag};
     use crate::utils::u64_to_node_id;
     use ego_tree::NodeId;
     use polars::prelude::*;
     use scraper::Html;
-
-    const HTML: &str = r#"
+    
+    const HTML_INDEX: LazyLock<HTMLIndex<Box<Html>>> = LazyLock::new(|| {
+        const HTML: &str = r#"
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Hello, world!</title>
@@ -480,6 +482,11 @@ mod tests {
 <h3 class="foo bar" id="3">Hello, <i>world!</i></h3>
 <h1 id="4">你好</h1>
 "#;
+        let document = Html::parse_document(HTML);
+        let html_index = HTMLIndex::new(Box::new(document));
+        html_index
+    });
+    
 
     fn get_id(document: &Html, node_id: NodeId) -> &str {
         document.tree
@@ -491,9 +498,7 @@ mod tests {
 
     #[test]
     fn test_class() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let ref_df = queryable.df
+        let ref_df = HTML_INDEX.df
             .clone()
             .lazy()
             .filter(col(CLASS).list().contains(lit("foo")))
@@ -507,7 +512,7 @@ mod tests {
             .into_no_null_iter()
             .map(u64_to_node_id)
             .collect();
-        let node_ids = queryable.query(class("foo"));
+        let node_ids = HTML_INDEX.query(class("foo"));
         println!("{}", ref_df);
         println!("Ref NodeIDs: {:?}", ref_node_ids);
         println!("NodeIDs: {:?}", node_ids);
@@ -516,9 +521,7 @@ mod tests {
 
     #[test]
     fn test_id() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let ref_df = queryable.df
+        let ref_df = HTML_INDEX.df
             .clone()
             .lazy()
             .filter(col(ID).eq(lit("3")))
@@ -532,7 +535,7 @@ mod tests {
             .into_no_null_iter()
             .map(u64_to_node_id)
             .collect();
-        let node_ids = queryable.query(id("3"));
+        let node_ids = HTML_INDEX.query(id("3"));
         println!("{}", ref_df);
         println!("Ref NodeIDs: {:?}", ref_node_ids);
         println!("NodeIDs: {:?}", node_ids);
@@ -541,9 +544,7 @@ mod tests {
 
     #[test]
     fn test_tag() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let ref_df = queryable.df
+        let ref_df = HTML_INDEX.df
             .clone()
             .lazy()
             .filter(col(TAG).eq(lit("h1")))
@@ -557,7 +558,7 @@ mod tests {
             .into_no_null_iter()
             .map(u64_to_node_id)
             .collect();
-        let node_ids = queryable.query(Tag::H1);
+        let node_ids = HTML_INDEX.query(Tag::H1);
         println!("{}", ref_df);
         println!("Ref NodeIDs: {:?}", ref_node_ids);
         println!("NodeIDs: {:?}", node_ids);
@@ -566,45 +567,37 @@ mod tests {
 
     #[test]
     fn test_query() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let node_ids = queryable.query(class("foo") & class("bar"));
+        let node_ids = HTML_INDEX.query(class("foo") & class("bar"));
         assert_eq!(node_ids.len(), 1);
         let node_id = node_ids[0];
-        assert_eq!(get_id(&document, node_id), "3");
+        assert_eq!(get_id(&HTML_INDEX.html, node_id), "3");
 
-        let node_ids = queryable.query(class("foo bar"));
+        let node_ids = HTML_INDEX.query(class("foo bar"));
         assert_eq!(node_ids.len(), 1);
         let node_id = node_ids[0];
-        assert_eq!(get_id(&document, node_id), "3");
+        assert_eq!(get_id(&HTML_INDEX.html, node_id), "3");
     }
 
     #[test]
     fn test_query1() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let node_ids = queryable.query(class("bar") | id("3"));
+        let node_ids = HTML_INDEX.query(class("bar") | id("3"));
         assert_eq!(node_ids.len(), 2);
-        assert_eq!(get_id(&document, node_ids[0]), "2");
-        assert_eq!(get_id(&document, node_ids[1]), "3");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[0]), "2");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[1]), "3");
     }
 
     #[test]
     fn test_query2() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let node_ids = queryable.query(Tag::H1);
+        let node_ids = HTML_INDEX.query(Tag::H1);
         assert_eq!(node_ids.len(), 2);
-        assert_eq!(get_id(&document, node_ids[0]), "1");
-        assert_eq!(get_id(&document, node_ids[1]), "4");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[0]), "1");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[1]), "4");
     }
 
     #[test]
     fn test_not() {
-        let document = Html::parse_document(HTML);
-        let queryable = HTMLIndex::new(&document);
-        let node_ids = queryable.query(Tag::H1 & (!class("foo")));
+        let node_ids = HTML_INDEX.query(Tag::H1 & (!class("foo")));
         assert_eq!(node_ids.len(), 1);
-        assert_eq!(get_id(&document, node_ids[0]), "4");
+        assert_eq!(get_id(&HTML_INDEX.html, node_ids[0]), "4");
     }
 }

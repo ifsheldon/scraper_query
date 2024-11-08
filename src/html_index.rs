@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::consts::*;
 use crate::query::Query;
 use crate::utils::{node_id_to_u64, u64_to_node_id};
@@ -7,13 +8,17 @@ use scraper::{Html, Node};
 
 /// An index into `Html` document tree backed by polars' `DataFrame`.
 #[derive(Debug, Clone)]
-pub struct HTMLIndex<'html> {
+pub struct HTMLIndex<H: Deref<Target=Html>> {
     pub(crate) df: DataFrame,
-    pub html: &'html Html,
+    pub html: H,
 }
 
-impl<'html> HTMLIndex<'html> {
-    pub fn new(html: &'html Html) -> Self {
+impl<H: Deref<Target=Html>> HTMLIndex<H> {
+    
+    /// Create a new `HTMLIndex`
+    /// 
+    /// accepts a reference or smart pointer to `Html`
+    pub fn new(html: H) -> Self {
         let node_num = html.tree.nodes().count();
         let mut node_ids = Vec::with_capacity(node_num);
         let mut classes = Vec::with_capacity(node_num);
